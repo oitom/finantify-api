@@ -2,7 +2,7 @@ version: '3'
 
 services:
   nestjs-app:
-    container_name: finantidy-api
+    container_name: finantify-api
     build:
       context: .
       dockerfile: .docker/Dockerfile
@@ -18,7 +18,7 @@ services:
       - .env
 
   mysql-db:
-    container_name: finantidy-mysql
+    container_name: finantify-mysql
     build:
       context: .
     restart: always
