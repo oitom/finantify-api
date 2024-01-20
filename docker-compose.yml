@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  nestjs-app:
+    container_name: finantidy-api
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile
+    working_dir: /app
+    command: npm run start:dev
+    volumes:
+      - .:/app
+    ports:
+      - "3003:3003"
+    depends_on:
+      - mysql-db
+    env_file:
+      - .env
+
+  mysql-db:
+    container_name: finantidy-mysql
+    build:
+      context: .
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql
