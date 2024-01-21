@@ -24,6 +24,9 @@ export class User {
   @Column({ type: "tinyint", default: 1, comment: "1: Active, 0: Inactive" })
   status: number;
 
+  @Column({ enum: ["admin", "user"], default: "user" })
+  role: string;
+
   @CreateDateColumn({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
   created_at: Date;
 
