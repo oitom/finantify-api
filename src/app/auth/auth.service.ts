@@ -68,6 +68,9 @@ export class AuthService {
   }
 
   private generateRefreshToken(user: User) {
-    return this.jwtService.sign({ sub: user.id }, { expiresIn: "7d" });
+    return this.jwtService.sign(
+      { sub: user.id },
+      { expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME },
+    );
   }
 }
