@@ -25,7 +25,7 @@ export class User {
   status: number;
 
   @Column({ enum: ["admin", "user"], default: "user" })
-  role: string;
+  roles: string;
 
   @CreateDateColumn({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
   created_at: Date;

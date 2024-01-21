@@ -13,6 +13,8 @@ import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { AuthGuard } from "@nestjs/passport";
+import { Roles } from "../auth/decorators/roles.decorator";
+import { RolesGuard } from "../auth/guard/roles.guard";
 
 @Controller("users")
 @UseGuards(AuthGuard("jwt"))
@@ -29,6 +31,8 @@ export default class UsersController {
   }
 
   @Post()
+  @Roles("admin")
+  @UseGuards(RolesGuard)
   async create(@Body() createUserDto: CreateUserDto) {
     return await this.usersService.create(createUserDto);
   }

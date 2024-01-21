@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
   `name` VARCHAR(100) NOT NULL,
   `email` VARCHAR(100) NOT NULL,
   `password` VARCHAR(100) NOT NULL,
-  `role` ENUM('admin', 'user') DEFAULT 'user',
+  `roles` ENUM('admin', 'user') DEFAULT 'user',
   `status` TINYINT DEFAULT 1 COMMENT '1: Active, 0: Inactive',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
