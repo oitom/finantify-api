@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { User } from "./entities/users.entity";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { FindOneOptions, Repository } from "typeorm";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import * as bcrypt from "bcrypt";
@@ -14,13 +14,26 @@ export class UsersService {
   ) {}
 
   async findAll(): Promise<User[]> {
-    return await this.usersRepository.find();
+    return await this.usersRepository.find({
+      select: ["id", "name", "email", "status"],
+    });
   }
 
-  async findOne(id: number): Promise<User> {
+  async findOne(id: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { id: id },
+      select: ["id", "name", "email", "status"],
     });
+
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+
+    return user;
+  }
+
+  async findOneOrFail(conditions: FindOneOptions<User>): Promise<User> {
+    const user = await this.usersRepository.findOneOrFail(conditions);
 
     if (!user) {
       throw new NotFoundException("User not found");
@@ -34,10 +47,11 @@ export class UsersService {
     const hashedPassword = await bcrypt.hash(password, 10);
     const userToSave: CreateUserDto = { name, email, password: hashedPassword };
     const savedUser = await this.usersRepository.save(userToSave);
-    return savedUser;
+
+    return await this.findOne(savedUser.id);
   }
 
-  async update(id: number, data: UpdateUserDto): Promise<User> {
+  async update(id: string, data: UpdateUserDto): Promise<User> {
     const existingUser = await this.findOne(id);
 
     if (!existingUser) {
@@ -55,17 +69,25 @@ export class UsersService {
     }
 
     const updatedUser = await this.usersRepository.save(existingUser);
-    return updatedUser;
+
+    return await this.findOne(updatedUser.id);
   }
 
-  async remove(id: number): Promise<any> {
+  async remove(id: string): Promise<any> {
     const user = await this.findOne(id);
 
     if (!user) {
       throw new NotFoundException("User not found");
     }
 
-    await this.usersRepository.remove(user);
+    // Alterar o status para 3 antes de realizar o soft delete
+    user.status = 3;
+
+    // Atualizar o usuário no banco de dados com o novo status
+    await this.usersRepository.save(user);
+
+    // Executar o soft delete
+    await this.usersRepository.softDelete(id);
 
     const userDel = await this.usersRepository.findOne({
       where: { id: id },

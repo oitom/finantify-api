@@ -4,12 +4,13 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
 } from "typeorm";
 
 @Entity("users")
 export class User {
-  @PrimaryGeneratedColumn({ type: "int", unsigned: true })
-  id: number;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
   @Column({ type: "varchar", length: 100 })
   name: string;
@@ -32,4 +33,7 @@ export class User {
     onUpdate: "CURRENT_TIMESTAMP",
   })
   updated_at: Date;
+
+  @DeleteDateColumn({ type: "datetime", nullable: true })
+  deleted_at: Date;
 }
