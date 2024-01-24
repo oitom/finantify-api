@@ -13,13 +13,14 @@ import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { AuthGuard } from "@nestjs/passport";
-import { Roles } from "../auth/decorators/roles.decorator";
-import { RolesGuard } from "../auth/guard/roles.guard";
+// import { Roles } from "../auth/decorators/roles.decorator";
+// import { RolesGuard } from "../auth/guard/roles.guard";
 
 @Controller("users")
 @UseGuards(AuthGuard("jwt"))
 export default class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
   @Get()
   async findAll() {
     return this.usersService.findAll();
@@ -30,9 +31,9 @@ export default class UsersController {
     return await this.usersService.findOne(id);
   }
 
+  // @Roles("admin")
+  // @UseGuards(RolesGuard)
   @Post()
-  @Roles("admin")
-  @UseGuards(RolesGuard)
   async create(@Body() createUserDto: CreateUserDto) {
     return await this.usersService.create(createUserDto);
   }

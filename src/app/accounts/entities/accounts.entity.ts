@@ -1,4 +1,3 @@
-import { Account } from "src/app/accounts/entities/accounts.entity";
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -6,28 +5,31 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
-  OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from "typeorm";
+import { User } from "src/app/users/entities/users.entity";
 
-@Entity("users")
-export class User {
+@Entity("accounts")
+export class Account {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ type: "varchar", length: 100 })
+  @Column({ type: "varchar", length: 255 })
   name: string;
 
-  @Column({ type: "varchar", length: 100 })
-  email: string;
+  @Column({ type: "decimal", precision: 10, scale: 2 })
+  current_balance: number;
 
-  @Column({ type: "varchar", length: 100 })
-  password: string;
-
-  @Column({ type: "tinyint", default: 1, comment: "1: Active, 0: Inactive" })
+  @Column({ type: "tinyint" })
   status: number;
 
-  @Column({ enum: ["admin", "user"], default: "user" })
-  roles: string;
+  @Column({ type: "varchar", length: 255, nullable: true })
+  icon: string;
+
+  @ManyToOne(() => User, (user) => user.accounts)
+  @JoinColumn({ name: "user_id" })
+  user: User;
 
   @CreateDateColumn({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
   created_at: Date;
@@ -41,7 +43,4 @@ export class User {
 
   @DeleteDateColumn({ type: "datetime", nullable: true })
   deleted_at: Date;
-
-  @OneToMany(() => Account, (account) => account.user)
-  accounts: Account[];
 }

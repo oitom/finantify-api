@@ -80,13 +80,8 @@ export class UsersService {
       throw new NotFoundException("User not found");
     }
 
-    // Alterar o status para 3 antes de realizar o soft delete
     user.status = 3;
-
-    // Atualizar o usuário no banco de dados com o novo status
     await this.usersRepository.save(user);
-
-    // Executar o soft delete
     await this.usersRepository.softDelete(id);
 
     const userDel = await this.usersRepository.findOne({
