@@ -34,6 +34,15 @@ export class BaseService {
     return user;
   }
 
+  async getUserRole() {
+    const user = await this.getUserFromToken();
+
+    if (!user.roles) {
+      throw new NotFoundException("User role not found");
+    }
+    return user.roles;
+  }
+
   async handleException(error: Error) {
     if (error instanceof NotFoundException) {
       return new NotFoundException(error.message);

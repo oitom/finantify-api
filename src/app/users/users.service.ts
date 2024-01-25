@@ -13,9 +13,16 @@ export class UsersService {
     private readonly usersRepository: Repository<User>,
   ) {}
 
-  async findAll(): Promise<User[]> {
+  async findAll(user: any): Promise<User[]> {
+    if (user && user.roles && user.roles.includes("admin")) {
+      return await this.usersRepository.find({
+        select: ["id", "name", "email", "status", "roles"],
+      });
+    }
+
     return await this.usersRepository.find({
       select: ["id", "name", "email", "status"],
+      where: { id: user.id },
     });
   }
 

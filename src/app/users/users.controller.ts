@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -13,17 +14,25 @@ import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { AuthGuard } from "@nestjs/passport";
-// import { Roles } from "../auth/decorators/roles.decorator";
-// import { RolesGuard } from "../auth/guard/roles.guard";
+import { Roles } from "../auth/decorators/roles.decorator";
+import { RolesGuard } from "../auth/guard/roles.guard";
+import { REQUEST } from "@nestjs/core";
+import { Request } from "express";
 
 @Controller("users")
 @UseGuards(AuthGuard("jwt"))
 export default class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  private user: any;
+
+  constructor(
+    private readonly usersService: UsersService,
+    @Inject(REQUEST) protected readonly request: Request,
+  ) {}
 
   @Get()
   async findAll() {
-    return this.usersService.findAll();
+    const user = this.request.user as any;
+    return this.usersService.findAll(user);
   }
 
   @Get(":id")
@@ -31,8 +40,8 @@ export default class UsersController {
     return await this.usersService.findOne(id);
   }
 
-  // @Roles("admin")
-  // @UseGuards(RolesGuard)
+  @Roles("admin")
+  @UseGuards(RolesGuard)
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
     return await this.usersService.create(createUserDto);
