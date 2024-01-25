@@ -52,7 +52,12 @@ export class UsersService {
   async create(data: CreateUserDto): Promise<User> {
     const { name, email, password } = data;
     const hashedPassword = await bcrypt.hash(password, 10);
-    const userToSave: CreateUserDto = { name, email, password: hashedPassword };
+    const userToSave: CreateUserDto = {
+      name,
+      email,
+      password: hashedPassword,
+      status: 1,
+    };
     const savedUser = await this.usersRepository.save(userToSave);
 
     return await this.findOne(savedUser.id);
@@ -65,19 +70,12 @@ export class UsersService {
       throw new NotFoundException("User not found");
     }
 
-    const { name, email, password } = data;
-
-    existingUser.name = name !== undefined ? name : existingUser.name;
-    existingUser.email = email !== undefined ? email : existingUser.email;
-
-    if (password !== undefined) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      existingUser.password = hashedPassword;
+    if (data.password) {
+      data.password = await bcrypt.hash(data.password, 10);
     }
 
-    const updatedUser = await this.usersRepository.save(existingUser);
-
-    return await this.findOne(updatedUser.id);
+    this.usersRepository.merge(existingUser, data);
+    return await this.usersRepository.save(existingUser);
   }
 
   async remove(id: string): Promise<any> {
@@ -87,17 +85,9 @@ export class UsersService {
       throw new NotFoundException("User not found");
     }
 
-    user.status = 3;
+    user.status = 2;
     await this.usersRepository.save(user);
     await this.usersRepository.softDelete(id);
-
-    const userDel = await this.usersRepository.findOne({
-      where: { id: id },
-    });
-
-    if (userDel) {
-      throw new NotFoundException("User not deleted");
-    }
 
     return { message: "User deleted successfully!" };
   }

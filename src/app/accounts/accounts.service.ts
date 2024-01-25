@@ -7,6 +7,7 @@ import { BaseService } from "src/app/core/base.service";
 import { REQUEST } from "@nestjs/core";
 import { Request } from "express";
 import { User } from "../users/entities/users.entity";
+import { UpdateAccountDto } from "./dto/update-account.dto";
 
 @Injectable()
 export class AccountsService extends BaseService {
@@ -34,6 +35,12 @@ export class AccountsService extends BaseService {
     try {
       const user = await this.getUserFromToken();
 
+      if (user && user.roles && user.roles.includes("admin")) {
+        return this.accountRepository.find({
+          select: this.selectFields as (keyof Account)[],
+        });
+      }
+
       return this.accountRepository.find({
         where: { user },
         select: this.selectFields as (keyof Account)[],
@@ -46,8 +53,14 @@ export class AccountsService extends BaseService {
   async findOne(id: string): Promise<Account> {
     try {
       const user = await this.getUserFromToken();
+
+      let condition = { id, user } as any;
+      if (user && user.roles && user.roles.includes("admin")) {
+        condition = { id } as any;
+      }
+
       const account = await this.accountRepository.findOne({
-        where: { user, id },
+        where: condition,
         select: this.selectFields as (keyof Account)[],
       });
 
@@ -76,6 +89,38 @@ export class AccountsService extends BaseService {
       const account = await this.accountRepository.save(newAccount);
 
       return this.findOne(account.id);
+    } catch (error) {
+      throw await this.handleException(error);
+    }
+  }
+
+  async update(id: string, data: UpdateAccountDto): Promise<Account> {
+    try {
+      const existAccount = await this.findOne(id);
+
+      if (!existAccount) {
+        throw new NotFoundException("Account not found");
+      }
+
+      this.accountRepository.merge(existAccount, data);
+      return this.accountRepository.save(existAccount);
+    } catch (error) {
+      throw await this.handleException(error);
+    }
+  }
+
+  async remove(id: string): Promise<any> {
+    try {
+      const existAccount = await this.findOne(id);
+
+      if (!existAccount) {
+        throw new NotFoundException("Account not found");
+      }
+      existAccount.status = 2;
+      await this.accountRepository.save(existAccount);
+      await this.accountRepository.softDelete(id);
+
+      return { message: "Account deleted successfully!" };
     } catch (error) {
       throw await this.handleException(error);
     }
